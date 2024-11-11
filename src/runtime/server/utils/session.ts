@@ -175,27 +175,29 @@ export async function getUserSession(event: H3Event) {
 }
 
 async function exposeTokensIfConfigured(event: H3Event, session: any, userSession: UserSession, provider: ProviderKeys) {
-  await exposeAccessTokenIfConfigured(event, session, userSession, provider)
-  await exposeIdTokenIfConfigured(event, session, userSession, provider)
+  const persistentSession = await useStorage('oidc').getItem<PersistentSession>(session.id as string) as PersistentSession | null
+  if (persistentSession) {
+    await exposeAccessTokenIfConfigured(event, persistentSession, userSession, provider)
+    await exposeIdTokenIfConfigured(event, persistentSession, userSession, provider)
+  }
 }
 
-async function exposeAccessTokenIfConfigured(event: H3Event, session: any, userSession: UserSession, provider: ProviderKeys) {
+async function exposeAccessTokenIfConfigured(event: H3Event, persistentSession: PersistentSession, userSession: UserSession, provider: ProviderKeys) {
   if (useRuntimeConfig(event).oidc.providers[provider]?.exposeAccessToken || providerPresets[provider].exposeAccessToken) {
-    const persistentSession = await useStorage('oidc').getItem<PersistentSession>(session.id as string) as PersistentSession | null
-    const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
-    if (persistentSession)
+    if (persistentSession) {
+      const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
       userSession.accessToken = await decryptToken(persistentSession.accessToken, tokenKey)
+    }
   }
 }
 
-async function exposeIdTokenIfConfigured(event: H3Event, session: any, userSession: UserSession, provider: ProviderKeys) {
+async function exposeIdTokenIfConfigured(event: H3Event, persistentSession: PersistentSession, userSession: UserSession, provider: ProviderKeys) {
   if (useRuntimeConfig(event).oidc.providers[provider]?.exposeIdToken || providerPresets[provider].exposeIdToken) {
-    const persistentSession = await useStorage('oidc').getItem<PersistentSession>(session.id as string) as PersistentSession | null
-    const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
-    if (persistentSession?.idToken)
+    if (persistentSession.idToken) {
+      const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
       userSession.idToken = await decryptToken(persistentSession.idToken, tokenKey) || undefined
+    }
   }
-  return userSession
 }
 
 export async function getUserSessionId(event: H3Event) {
