@@ -157,7 +157,22 @@ export async function getUserSession(event: H3Event) {
       logger.info('Session expired')
       // Automatic token refresh
       if (providerSessionConfigs[provider].automaticRefresh) {
+
         await refreshUserSession(event)
+        // Expose tokens if configured
+        if (useRuntimeConfig(event).oidc.providers[provider]?.exposeAccessToken || providerPresets[provider].exposeAccessToken) {
+          const persistentSession = await useStorage('oidc').getItem<PersistentSession>(session.id as string) as PersistentSession | null
+          const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
+          if (persistentSession)
+            userSession.accessToken = await decryptToken(persistentSession.accessToken, tokenKey)
+        }
+        if (useRuntimeConfig(event).oidc.providers[provider]?.exposeIdToken || providerPresets[provider].exposeIdToken) {
+          const persistentSession = await useStorage('oidc').getItem<PersistentSession>(session.id as string) as PersistentSession | null
+          const tokenKey = process.env.NUXT_OIDC_TOKEN_KEY as string
+          if (persistentSession?.idToken)
+            userSession.idToken = await decryptToken(persistentSession.idToken, tokenKey) || undefined
+        }
+
         return userSession
       }
       await clearUserSession(event)
