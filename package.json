@@ -1,7 +1,7 @@
 {
   "name": "nuxt-oidc-auth-flou",
   "type": "module",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "private": false,
   "packageManager": "pnpm@9.12.2",
   "description": "OIDC authentication module for Nuxt SSR",
@@ -28,7 +28,7 @@
     "dev": "nuxi dev playground",
     "dev:docs": "nuxi dev docs",
     "dev:prepare": "nuxt-module-build build --stub && nuxt-module-build prepare && nuxi prepare playground && nuxi prepare client",
-    "release": "pnpm lint && pnpm prepack && changelogen --release && git push --follow-tags && pnpm publish --access=public",
+    "release": "pnpm prepack && changelogen --release && git push --follow-tags && pnpm publish --access=public --publish-branch expose-tokens-naive",
     "lint": "eslint . && tsc --noemit",
     "test": "vitest run",
     "test:watch": "vitest watch"
