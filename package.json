@@ -1,7 +1,7 @@
 {
   "name": "nuxt-oidc-auth-flou",
   "type": "module",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": false,
   "packageManager": "pnpm@9.12.2",
   "description": "OIDC authentication module for Nuxt SSR",
